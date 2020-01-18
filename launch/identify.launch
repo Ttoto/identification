@@ -1,0 +1,10 @@
+<launch>
+
+    <param name="map_files_path" type="string"  value="$(find identification)/data/map/"/>
+
+    <node pkg="identification" type="identify" name="identify" output="screen">
+      <remap from="/odom_in"  to="/mavros/vision_pose/pose" />
+      <remap from="/image_in" to="/usb_cam/image_raw" />
+    </node>
+
+</launch>

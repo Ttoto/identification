@@ -1,0 +1,12 @@
+<launch>
+
+    <param name="map_files_path" type="string"  value="$(find identification)/data/map/"/>
+
+    <node pkg="identification" type="map_recorder" name="map_recorder" output="screen">
+      <remap from="/odom_in"  to="/mavros/vision_pose/pose" />
+      <remap from="/image_in" to="/usb_cam/image_raw" />
+    </node>
+
+    <node pkg="rosbag" type="play" name="rosbag" args="--clock $(find identification)/data/map.bag -s4"/>
+
+</launch>
