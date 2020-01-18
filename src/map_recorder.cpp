@@ -4,6 +4,7 @@
 #include "sensor_msgs/Image.h"
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
+#include <math.h>
 
 #include <sstream>
 
@@ -19,9 +20,7 @@ bool initpose;
 int  image_save_count;
 
 string filename;
-
-
-
+vector<int>compression_params;
 
 void cvs_pose_write(int index,
                     double px, double py, double pz,
@@ -64,7 +63,7 @@ void imageCB(const sensor_msgs::ImagePtr msg)
                                last_saved_pose.pose.orientation.x,
                                last_saved_pose.pose.orientation.y,
                                last_saved_pose.pose.orientation.z);
-                imwrite(filepath+to_string(image_save_count)+".png", img);
+                imwrite(filepath+to_string(image_save_count)+".png", img, compression_params);
                 image_save_count++;
                 initpose = true;
             }
@@ -72,7 +71,7 @@ void imageCB(const sensor_msgs::ImagePtr msg)
                 double dx=curr_pose.pose.position.x-last_saved_pose.pose.position.x;
                 double dy=curr_pose.pose.position.y-last_saved_pose.pose.position.y;
                 double dz=curr_pose.pose.position.z-last_saved_pose.pose.position.z;
-                if(dx>0.3)
+                if(sqrt(dx*dx+dy*dy+dz*dz)>0.2)
                 {
                     last_saved_pose = curr_pose;
                     cvs_pose_write(image_save_count,
@@ -83,7 +82,7 @@ void imageCB(const sensor_msgs::ImagePtr msg)
                                    last_saved_pose.pose.orientation.x,
                                    last_saved_pose.pose.orientation.y,
                                    last_saved_pose.pose.orientation.z);
-                    imwrite(filepath+to_string(image_save_count)+".png", img );
+                    imwrite(filepath+to_string(image_save_count)+".png", img, compression_params);
                     image_save_count++;
                 }
             }
@@ -113,6 +112,8 @@ int main(int argc, char **argv)
     nh.getParam("map_files_path", filepath);
     cout << "read file path: " << filepath << endl;
 
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(0);
 
     ros::Subscriber sub1 = nh.subscribe("/odom_in", 5,  odomCB);
     ros::Subscriber sub2 = nh.subscribe("/image_in", 1, imageCB);
