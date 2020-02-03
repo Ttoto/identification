@@ -28,7 +28,7 @@ void cvs_pose_write(int index,
 {
     cvs_fs.open(filepath+"map.csv", ios::out | ios::app);
     cvs_fs << index << ","
-           << px << "," << py << "," << px << ","
+           << px << "," << py << "," << pz << ","
            << qw << "," << qx << ","<< qy << ","<< qz << "\n";
     cvs_fs.close();
 }
@@ -43,9 +43,15 @@ void imageCB(const sensor_msgs::ImagePtr msg)
 {
     try
     {
+        static bool once=true;
         Mat img = cv_bridge::toCvCopy(msg, "bgr8")->image;
-        //imshow("image",img);
-        //cv::waitKey(1);
+        imshow("image",img);
+        if(once)
+        {
+            moveWindow("image", 150,50);
+            once = false;
+        }
+        cv::waitKey(1);
         if(hasodom)
         {
             //cout << curr_pose.pose.position.x << endl;
@@ -71,7 +77,7 @@ void imageCB(const sensor_msgs::ImagePtr msg)
                 double dx=curr_pose.pose.position.x-last_saved_pose.pose.position.x;
                 double dy=curr_pose.pose.position.y-last_saved_pose.pose.position.y;
                 double dz=curr_pose.pose.position.z-last_saved_pose.pose.position.z;
-                if(sqrt(dx*dx+dy*dy+dz*dz)>0.2)
+                if(sqrt(dx*dx+dy*dy+dz*dz)>0.1)
                 {
                     last_saved_pose = curr_pose;
                     cvs_pose_write(image_save_count,
